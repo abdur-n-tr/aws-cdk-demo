@@ -3,13 +3,58 @@ import { Construct } from 'constructs';
 import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Key, IKey } from 'aws-cdk-lib/aws-kms';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { isKeyObject } from 'util/types';
+import { aws_redshiftserverless as redshiftserverless } from 'aws-cdk-lib';
+import { CfnWorkgroup } from 'aws-cdk-lib/aws-redshiftserverless';
+
 
 export class MyCdkDemoAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // L2 construct for s3 bucket
+    // s3-redshift role
+    const s3_to_redshift_role = new iam.Role(this, 'Role', {
+      assumedBy: new iam.ServicePrincipal("redshift.amazonaws.com"),
+      roleName: "s3-to-redshift-role"
+    });
+
+    s3_to_redshift_role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonRedshiftFullAccess'));
+    s3_to_redshift_role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'));
+    s3_to_redshift_role.addManagedPolicy({
+      managedPolicyArn: "arn:aws:iam::aws:policy/service-role/ROSAKMSProviderPolicy",
+    });
+
+    
+    const cfnNamespace = new redshiftserverless.CfnNamespace(this, 'MyCfnNamespace', {
+      namespaceName: 'default-namespace-101',
+
+      // the properties below are optional
+      dbName: "dev",
+      adminUsername: '',
+      adminUserPassword: '',
+      defaultIamRoleArn: s3_to_redshift_role.roleArn,
+      iamRoles: [s3_to_redshift_role.roleArn]
+    });
+
+    console.log("==================", cfnNamespace.namespaceName);
+
+    const cfnWorkgroup = new redshiftserverless.CfnWorkgroup(this, 'MyCfnWorkgroup', {
+      workgroupName: 'default-workgroup-101',
+    
+      // the properties below are optional
+      namespaceName: cfnNamespace.namespaceName,
+      configParameters: [
+        {
+          parameterKey: 'max_query_execution_time',
+          parameterValue: '14400'
+        }
+      ],
+      securityGroupIds: ['sg-056af26c3ba45eb3c'],
+      subnetIds: ['subnet-064ee1c4bfe66d286', 'subnet-07661d4d497929542', 'subnet-07aaefb19d8f2b82a'],
+      
+    });
+
+    cfnWorkgroup.addDependency(cfnNamespace);
+    
 
     const myKMSkeyPolicy = new iam.PolicyDocument({
       statements: [
@@ -23,39 +68,23 @@ export class MyCdkDemoAppStack extends cdk.Stack {
               resources: ['*']
           }),
           new iam.PolicyStatement({
-              sid: 'Allow use of the key',
-              effect: iam.Effect.ALLOW,
-              principals: [new iam.ArnPrincipal('arn:aws:iam::471112663332:user/aws-console-user')],
-              actions: [
-                  'kms:Encrypt',
-                  'kms:Decrypt',
-                  'kms:ReEncrypt*',
-                  'kms:GenerateDataKey*',
-                  'kms:DescribeKey'
-              ],
-              resources: ['*']
-          }),
-          new iam.PolicyStatement({
-              sid: 'Allow attachment of persistent resources',
-              effect: iam.Effect.ALLOW,
-              principals: [new iam.ArnPrincipal('arn:aws:iam::471112663332:user/aws-console-user')],
-              actions: [
-                  'kms:CreateGrant',
-                  'kms:ListGrants',
-                  'kms:RevokeGrant'
-              ],
-              resources: ['*'],
-              conditions: {
-                  Bool: {
-                      'kms:GrantIsForAWSResource': 'true'
-                  }
-              }
+            sid: 'Allow use of the key to Redshift Role',
+            effect: iam.Effect.ALLOW,
+            principals: [new iam.ArnPrincipal(s3_to_redshift_role.roleArn)],
+            actions: [
+                'kms:Encrypt',
+                'kms:Decrypt',
+                'kms:ReEncrypt*',
+                'kms:GenerateDataKey*',
+                'kms:DescribeKey'
+            ],
+            resources: ['*']
           })
       ]
     });
 
-    const cdkAWSKmsKey = new Key(this, "MyKMSkey", {
-      alias: "cdkKMSTestKey",
+    const s3KMSKeyForData = new Key(this, "MyKMSkey", {
+      alias: "s3KMSKeyForData",
       enabled: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       policy: myKMSkeyPolicy,
@@ -66,7 +95,7 @@ export class MyCdkDemoAppStack extends cdk.Stack {
       bucketName: "s3-cdk-bucket-ar",
       versioned: true,
       encryption: BucketEncryption.KMS,
-      encryptionKey: cdkAWSKmsKey,
+      encryptionKey: s3KMSKeyForData,
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
     
