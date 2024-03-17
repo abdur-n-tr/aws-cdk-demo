@@ -1,11 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Bucket, BucketEncryption, BucketPolicy } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BucketEncryption, BucketPolicy, BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { aws_redshiftserverless as redshiftserverless } from 'aws-cdk-lib';
 import { createKMSKeyPolicy } from './kms-policy';
-import { createLambdaPolicy, createCloudWatchPolicy } from './s3_bucket_policies';
+import { createLambdaPolicy, createCloudwatchLogsPolicy, createNonSecureCloudwatchLogPolicy } from './s3_bucket_policies';
 import * as constants from './constants';
 
 export class MyCdkDemoAppStack extends cdk.Stack {
@@ -61,18 +61,28 @@ export class MyCdkDemoAppStack extends cdk.Stack {
     const s3DataBucket = new Bucket(this, 'Mys3Bucket', {
       bucketName: constants.BUCKET_NAME,
       versioned: true,
-      encryption: BucketEncryption.KMS,
-      encryptionKey: s3KMSKeyForData,
+      // encryption: BucketEncryption.KMS,
+      // encryptionKey: s3KMSKeyForData,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+      blockPublicAccess: {
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false
+      }
     });
 
     // Add policies to the bucket's resource policy
     const s3BucketLambdaPolicy = createLambdaPolicy(s3DataBucket.bucketArn);
-    const s3BucketCloudWatchPolicy = createCloudWatchPolicy(s3DataBucket.bucketArn);
+    // const s3BucketCloudWatchPolicy = createCloudWatchPolicy(s3DataBucket.bucketArn);
+    const s3BucketCloudWatchLogPolicy = createCloudwatchLogsPolicy(s3DataBucket.bucketArn);
+    const s3NonSecureCloudWatchPolicy = createNonSecureCloudwatchLogPolicy(s3DataBucket.bucketArn);
 
     s3DataBucket.addToResourcePolicy(s3BucketLambdaPolicy);
-    s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
+    // s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
+    s3DataBucket.addToResourcePolicy(s3BucketCloudWatchLogPolicy);
+    s3DataBucket.addToResourcePolicy(s3NonSecureCloudWatchPolicy);
 
   }
 }
