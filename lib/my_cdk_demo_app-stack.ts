@@ -1,10 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BucketEncryption, BucketPolicy } from 'aws-cdk-lib/aws-s3';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { aws_redshiftserverless as redshiftserverless } from 'aws-cdk-lib';
 import { createKMSKeyPolicy } from './kms-policy';
+import { createLambdaPolicy, createCloudWatchPolicy } from './s3_bucket_policies';
 import * as constants from './constants';
 
 export class MyCdkDemoAppStack extends cdk.Stack {
@@ -50,7 +51,7 @@ export class MyCdkDemoAppStack extends cdk.Stack {
     const myKMSkeyPolicy = createKMSKeyPolicy(s3_to_redshift_role.roleArn);
 
     const s3KMSKeyForData = new Key(this, 'MyKMSkey', {
-      alias: constants.ALIAS,
+      alias: constants.KMS_ALIAS,
       enabled: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       policy: myKMSkeyPolicy,
@@ -63,7 +64,15 @@ export class MyCdkDemoAppStack extends cdk.Stack {
       encryption: BucketEncryption.KMS,
       encryptionKey: s3KMSKeyForData,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
+
+    // Add policies to the bucket's resource policy
+    const s3BucketLambdaPolicy = createLambdaPolicy(s3DataBucket.bucketArn);
+    const s3BucketCloudWatchPolicy = createCloudWatchPolicy(s3DataBucket.bucketArn);
+
+    s3DataBucket.addToResourcePolicy(s3BucketLambdaPolicy);
+    s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
 
   }
 }
