@@ -5,12 +5,7 @@ import { Key } from 'aws-cdk-lib/aws-kms';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { aws_redshiftserverless as redshiftserverless } from 'aws-cdk-lib';
 import { createKMSKeyPolicy } from './kms-policy';
-import { 
-  createLambdaPolicy, 
-  createCloudWatchPolicy, 
-  createCloudwatchLogsPolicy, 
-  createNonSecureCloudwatchLogPolicy 
-} from './s3_bucket_policies';
+import { createLambdaPolicy, createCloudWatchPolicy } from './s3_bucket_policies';
 import * as constants from './constants';
 
 export class MyCdkDemoAppStack extends cdk.Stack {
@@ -74,14 +69,10 @@ export class MyCdkDemoAppStack extends cdk.Stack {
 
     // Add policies to the bucket's resource policy
     const s3BucketLambdaPolicy = createLambdaPolicy(s3DataBucket.bucketArn);
-    // const s3BucketCloudWatchPolicy = createCloudWatchPolicy(s3DataBucket.bucketArn);
-    const s3BucketCloudWatchLogPolicy = createCloudwatchLogsPolicy(s3DataBucket.bucketArn);
-    const s3NonSecureCloudWatchPolicy = createNonSecureCloudwatchLogPolicy(s3DataBucket.bucketArn);
+    const s3BucketCloudWatchPolicy = createCloudWatchPolicy(s3DataBucket.bucketArn);
 
     s3DataBucket.addToResourcePolicy(s3BucketLambdaPolicy);
-    // s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
-    s3DataBucket.addToResourcePolicy(s3BucketCloudWatchLogPolicy);
-    s3DataBucket.addToResourcePolicy(s3NonSecureCloudWatchPolicy);
+    s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
 
   }
 }

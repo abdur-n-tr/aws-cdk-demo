@@ -1,4 +1,4 @@
-import { PolicyStatement, Effect, PolicyDocument, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement, Effect, AnyPrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export const createLambdaPolicy = (bucketArn: string): PolicyStatement => {
     return new PolicyStatement({
@@ -18,5 +18,31 @@ export const createCloudWatchPolicy = (bucketArn: string): PolicyStatement => {
         resources: [bucketArn],
         principals: [new ServicePrincipal('logs.amazonaws.com')], // Allow CloudWatch to access bucket
     });
+};
+
+export const createNonSecureCloudwatchLogPolicy = (bucketArn: string): PolicyStatement => {
+    return new PolicyStatement({
+        sid: 'Cloudwatch Log Export',
+        effect: Effect.ALLOW,
+        actions: ["s3:*"],
+        resources: [`${bucketArn}/*`],
+        principals: [new AnyPrincipal()],
+        conditions: {
+            bool: { "aws:SecureTransport": false }
+        }
+    });
+}
+
+export const createCloudwatchLogsPolicy = (bucketArn: string): PolicyStatement => {
+    return new PolicyStatement({
+        sid: 'Cloudwtach logs export 1',
+        effect: Effect.ALLOW,
+        actions: ["s3:GetBucketAcl", "s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+        resources: [`${bucketArn}/*`],
+        principals: [new ServicePrincipal('logs.amazonaws.com')],
+        conditions: {
+            stringLike: { 'aws:SourceAccount': ["168427128999", "387009947888", "624167633678"] }
+        }
+  })
 };
 
