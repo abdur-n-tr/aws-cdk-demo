@@ -14,3 +14,4 @@ export const ROLE_NAME = 's3-to-redshift-role';
 export const GLUE_DB_NAME = 'sampledb';
 export const GLUE_CRAWLER_NAME = 'employee_crawler';
 export const GLUE_CRAWLER_ROLE_NAME = 'glue_crawler_test_role';
+export const GLUE_JOB_NAME = 'glue_employee_job';

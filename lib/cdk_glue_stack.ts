@@ -14,6 +14,7 @@ export class CdkGlueStack extends cdk.Stack {
       });
 
       glueCrawlerRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'));
+      glueCrawlerRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchFullAccess'));
       glueCrawlerRole.addManagedPolicy({
         managedPolicyArn: 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole',
       });
@@ -29,7 +30,7 @@ export class CdkGlueStack extends cdk.Stack {
         role: glueCrawlerRole.roleArn,
         targets: {
           s3Targets: [{
-            path: 's3://aws-bootcamp-store-data/employee_data/',
+            path: 's3://s3-glue-bucket-ar/employee_data/',
           }],
         },
         databaseName: constants.GLUE_DB_NAME,
@@ -37,6 +38,31 @@ export class CdkGlueStack extends cdk.Stack {
         name: constants.GLUE_CRAWLER_NAME,
         recrawlPolicy: {
           recrawlBehavior: 'CRAWL_EVERYTHING'
+        }
+      });
+
+      const glueJob = new glue.CfnJob(this, 'glueJob', {
+        name: constants.GLUE_JOB_NAME,
+        description: 'Glue job to read from s3, perform transformations, and write to s3',
+        role: glueCrawlerRole.roleArn,
+        command: {
+          name: 'glueetl',
+          pythonVersion: '3',
+          scriptLocation: 's3://s3-glue-bucket-ar/scripts/glue_employee_job.py',
+        },
+        glueVersion: '3.0',
+        workerType: 'G.1X',
+        numberOfWorkers: 10,
+        maxRetries: 0,
+        timeout: 10,
+        executionClass: 'FLEX',
+        defaultArguments: {
+          "--enable-continuous-cloudwatch-log": true,
+          "--enable-observability-metrics": true,
+          "--enable-metrics": true,
+          "--enable-spark-ui": true,
+          "--spark-event-logs-path": "s3://s3-glue-bucket-ar/spark-logs/",
+          "--TempDir": "s3://s3-glue-bucket-ar/temp/"
         }
       });
 

@@ -115,6 +115,33 @@ node redshift_ops.js load
 ```bash
 node redshift_ops.js unload
 ```
+
+## Provision Glue Crawler and ETL Job
+- Run the following command if you only want to provision AWS glue resources,
+
+```bash
+cdk deploy CdkGlueStack
+```
+
+- If you want to provision all stack, Run the following command,
+
+```bash
+make deploy-all
+```
+
+- Similarly run the following command to destroy single or all stacks,
+```bash
+make destroy CdkGlueStack
+make destroy-all
+```
+
+## Run Glue Crawler and ETL Job
+- From `aws-javascript-sdk-demo` repo, run the following command to execute crawler and job respectively,
+
+```bash
+node glue_ops.js crawl
+node glue_ops.js run-job
+```
   
 ## Resource Cleaning
 
