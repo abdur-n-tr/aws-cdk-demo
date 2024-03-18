@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { MyCdkDemoAppStack } from '../lib/my_cdk_demo_app-stack';
+import { CdkGlueStack } from '../lib/cdk_glue_stack';
 
 const app = new cdk.App();
 new MyCdkDemoAppStack(app, 'MyCdkDemoAppStack', {
@@ -19,3 +20,5 @@ new MyCdkDemoAppStack(app, 'MyCdkDemoAppStack', {
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
+
+new CdkGlueStack(app, 'CdkGlueStack', {});

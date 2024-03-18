@@ -28,7 +28,7 @@ export const createNonSecureCloudwatchLogPolicy = (bucketArn: string): PolicySta
         resources: [`${bucketArn}/*`],
         principals: [new AnyPrincipal()],
         conditions: {
-            bool: { "aws:SecureTransport": false }
+            "Bool": { "aws:SecureTransport": false }
         }
     });
 }
@@ -38,10 +38,10 @@ export const createCloudwatchLogsPolicy = (bucketArn: string): PolicyStatement =
         sid: 'Cloudwtach logs export 1',
         effect: Effect.ALLOW,
         actions: ["s3:GetBucketAcl", "s3:PutObject", "s3:GetObject", "s3:ListBucket"],
-        resources: [`${bucketArn}/*`],
+        resources: [`${bucketArn}/*`, bucketArn],
         principals: [new ServicePrincipal('logs.amazonaws.com')],
         conditions: {
-            stringLike: { 'aws:SourceAccount': ["168427128999", "387009947888", "624167633678"] }
+            "StringLike": { "aws:SourceAccount": ["168427128999", "387009947888", "624167633678"] }
         }
   })
 };
