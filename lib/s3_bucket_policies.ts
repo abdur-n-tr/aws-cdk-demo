@@ -46,3 +46,33 @@ export const createCloudwatchLogsPolicy = (bucketArn: string): PolicyStatement =
   })
 };
 
+export const createCLWs3ACLPolicy = (bucketArn: string): PolicyStatement => {
+    return new PolicyStatement({
+        sid: 'Allow BucketACL for Cloudwtach',
+        effect: Effect.ALLOW,
+        actions: ["s3:GetBucketAcl"],
+        resources: [bucketArn],
+        principals: [new ServicePrincipal('logs.us-east-1.amazonaws.com')],
+        conditions: {
+            "StringEquals": { "aws:SourceAccount": ["471112663332"] },
+            "ArnLike": { "aws:SourceArn": [ "arn:aws:logs:us-east-1:471112663332:log-group:*"] }
+        }
+    })
+};
+
+export const createCLWs3PutObjPolicy = (bucketArn: string): PolicyStatement => {
+    return new PolicyStatement({
+        sid: 'Allow PutObject for Cloudwtach',
+        effect: Effect.ALLOW,
+        actions: ["s3:PutObject"],
+        resources: [`${bucketArn}/*`],
+        principals: [new ServicePrincipal('logs.us-east-1.amazonaws.com')],
+        conditions: {
+            "StringEquals": { 
+                "s3:x-amz-acl": "bucket-owner-full-control",
+                "aws:SourceAccount": ["471112663332"]
+            },
+            "ArnLike": { "aws:SourceArn": [ "arn:aws:logs:us-east-1:471112663332:log-group:*"] }
+        }
+    })
+};

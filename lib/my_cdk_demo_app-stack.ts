@@ -5,7 +5,13 @@ import { Key } from 'aws-cdk-lib/aws-kms';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { aws_redshiftserverless as redshiftserverless } from 'aws-cdk-lib';
 import { createKMSKeyPolicy } from './kms-policy';
-import { createLambdaPolicy, createCloudwatchLogsPolicy, createNonSecureCloudwatchLogPolicy } from './s3_bucket_policies';
+import { 
+  createLambdaPolicy, 
+  createCloudwatchLogsPolicy, 
+  createNonSecureCloudwatchLogPolicy,
+  createCLWs3ACLPolicy,
+  createCLWs3PutObjPolicy 
+} from './s3_bucket_policies';
 import * as constants from './constants';
 
 export class MyCdkDemoAppStack extends cdk.Stack {
@@ -83,6 +89,21 @@ export class MyCdkDemoAppStack extends cdk.Stack {
     // s3DataBucket.addToResourcePolicy(s3BucketCloudWatchPolicy);
     s3DataBucket.addToResourcePolicy(s3BucketCloudWatchLogPolicy);
     s3DataBucket.addToResourcePolicy(s3NonSecureCloudWatchPolicy);
+
+
+    const s3BucketCloudWatchLogs = new Bucket(this, 's3BucketCloudWatchLogs', {
+      bucketName: constants.CLOUDWATCH_BUCKET_NAME,
+      versioned: true,
+      encryption: BucketEncryption.KMS,
+      encryptionKey: s3KMSKeyForData,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const CLWs3ACLPolicy = createCLWs3ACLPolicy(s3BucketCloudWatchLogs.bucketArn);
+    const CLWs3PutObjPolicy = createCLWs3PutObjPolicy(s3BucketCloudWatchLogs.bucketArn);
+    s3BucketCloudWatchLogs.addToResourcePolicy(CLWs3ACLPolicy);
+    s3BucketCloudWatchLogs.addToResourcePolicy(CLWs3PutObjPolicy);
 
   }
 }
