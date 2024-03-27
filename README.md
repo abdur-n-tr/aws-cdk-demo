@@ -142,6 +142,13 @@ make destroy-all
 node glue_ops.js crawl
 node glue_ops.js run-job
 ```
+
+## Load Cloudwatch Logs to S3 bucket
+- Using `MyCdkDemoAppStack` stack, we have already deployed s3 bucket where we will load the logs. You can change the `start and end date` as required in `cloudwatch_ops.js` file and run the following command,
+
+```bash
+node cloudwatch_ops.js
+```
   
 ## Resource Cleaning
 
