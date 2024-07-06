@@ -21,6 +21,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 - Run the following commands to setup node,
 
 ```bash
+wget https://nodejs.org/dist/v20.15.0/node-v20.15.0-linux-x64.tar.xz (https://nodejs.org/en/download/prebuilt-binaries), Choose Linux and x64
 tar -xvf node-v20.11.1-linux-x64.tar.xz
 sudo mv node-v20.11.1-linux-x64 /usr/local/
 sudo ln -sf /usr/local/node-v20.11.1-linux-x64/bin/node /usr/bin/node
