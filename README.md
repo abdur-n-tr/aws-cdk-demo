@@ -61,7 +61,7 @@ git clone git@github.com-personal:<username>/<repository>.git
 git clone git@github.com-organization:<username>/<repository>.git
 ```
 
-## Setup Node Locally (for Linux/Ubuntu)
+## Setup Node and Yarn Locally (for Linux/Ubuntu)
 
 - Goto node website: https://nodejs.org/en/download and download for Linux as per your architecture,
 
@@ -85,6 +85,15 @@ npx -v
 ```
 
 - If the installation is successful, you must get versions of these packages without any errors.
+
+```bash
+sudo apt update
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update
+sudo apt install --no-install-recommends yarn
+yarn --version
+```
 
 ## Setup CDK with node
 
