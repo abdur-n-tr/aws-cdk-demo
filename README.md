@@ -14,6 +14,51 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `npx cdk synth`   emits the synthesized CloudFormation template
 
 
+## Setup WSL and Git
+
+For WSL Setup,
+
+- Enable Virtualization and Windows Subsystem for Linx from `Turn features on and off` in windows 
+- Also, enable virtualizaiton from BIOS if not enabled
+- Open powerShell as Admin, run `wsl --install`
+
+```bash
+git config --global user.name "abdur-n-tr"
+git config --global user.email "abdurrehman245@gmail.com"
+git config --list
+
+ssh-keygen -t ed25519 -f ~/.ssh/<ssh-desired-key-name>
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/<ssh-desired-key-name>
+
+cat ~/.ssh/id_ed25519.pub -> copy this key and add it github `SSH and GPG Keys` section. If you are adding 
+this ssh key for organization access, then `Configure SSO` and `Authorize` your organization.
+
+ssh -T git@github.com -> to test the github connection after adding SSH key.
+```
+
+- create a config file in `.ssh` dir and put the following in that config file to setup multiple organizaitons,
+
+# Personal GitHub account
+Host github.com-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/<personal-ssh-key>
+
+# Organization GitHub account
+Host github.com-organization
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/<organization-sso-authorized-ssh-key>
+
+- Now to clone a repo using your personal and organization sso authorized ssh key,
+
+```bash
+git clone git@github.com-personal:<username>/<repository>.git
+
+git clone git@github.com-organization:<username>/<repository>.git
+```
+
 ## Setup Node Locally (for Linux/Ubuntu)
 
 - Goto node website: https://nodejs.org/en/download and download for Linux as per your architecture,
