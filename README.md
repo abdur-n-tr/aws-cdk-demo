@@ -39,6 +39,7 @@ ssh -T git@github.com -> to test the github connection after adding SSH key.
 
 - create a config file in `.ssh` dir and put the following in that config file to setup multiple organizaitons,
 
+```bash
 # Personal GitHub account
 Host github.com-personal
     HostName github.com
@@ -50,6 +51,7 @@ Host github.com-organization
     HostName github.com
     User git
     IdentityFile ~/.ssh/<organization-sso-authorized-ssh-key>
+```
 
 - Now to clone a repo using your personal and organization sso authorized ssh key,
 
