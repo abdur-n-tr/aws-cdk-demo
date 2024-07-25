@@ -23,8 +23,8 @@ For WSL Setup,
 - Open powerShell as Admin, run `wsl --install`
 
 ```bash
-git config --global user.name "abdur-n-tr"
-git config --global user.email "abdurrehman245@gmail.com"
+git config --global user.name "<username>"
+git config --global user.email "<email>"
 git config --list
 
 ssh-keygen -t ed25519 -f ~/.ssh/<ssh-desired-key-name>
